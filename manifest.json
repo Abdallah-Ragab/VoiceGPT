@@ -1,0 +1,49 @@
+{
+    "name": "Voice GPT",
+    "version": "0.1.0",
+    "description": "Allows you to interact with chatGPT using your voice",
+    "host_permissions": [
+        "https://chat.openai.com/*"
+    ],
+    "permissions": [
+        "activeTab",
+        "tabs",
+        "webRequest",
+        "scripting"
+    ],
+    "background": {
+        "service_worker": "service-worker.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://chat.openai.com/*"
+            ],
+            "js": [
+                "lib/import.js",
+                "content.js",   
+                "app/main.js"
+            ],
+            "css": [
+                "app/main.css"
+            ],
+            "run_at": "document_end"
+        }
+    ],
+    "manifest_version": 3,
+    "action": {
+        "default_icon": "assets/icon.png",
+        "default_title": "Voice GPT",
+        "default_popup": "popup.html"
+    },
+    "web_accessible_resources": [{
+        "matches": [
+            "https://chat.openai.com/*"
+        ],
+        "resources": [
+            "app/modal.html",
+            "app/main.js",
+            "assets/icon.png"
+        ]
+    }]
+}
