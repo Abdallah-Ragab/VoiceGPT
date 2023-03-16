@@ -28,11 +28,7 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
     voiceGPTAutoSubmitSubOptionInput = document.querySelector('#voice-gpt-component .options .option#auto-submit .sub-option input');
 
     chatGPTInput = document.querySelector('form textarea');
-    chatGPTSubmitButton = (function _ (){let buttons = document.querySelectorAll('form button'); return buttons[buttons.length - 1]})()
-
-    console.log(chatGPTInput);
-    console.log(chatGPTSubmitButton);
-
+    chatGPTSubmitButton = (function _ (){let buttons = document.querySelectorAll('form button'); return buttons[buttons.length - 1]})();
 
     if (chrome.runtime.getURL){
         voiceGPTLogo.src = chrome.runtime.getURL('assets/icon.png');
