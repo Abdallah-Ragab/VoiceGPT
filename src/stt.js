@@ -19,6 +19,7 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
     setAutoSubmit();
     setRecognitionSilenceLimit(recognitionSilenceLimit);
     setAutoSubmitSubOption();
+    disableMicButton();
 
     function handleSpeech (event) {
         const current = event.resultIndex;
@@ -125,6 +126,14 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
         chatGPTInput = document.querySelector('form textarea');
         chatGPTSubmitButton = (function _ (){let buttons = document.querySelectorAll('form button'); return buttons[buttons.length - 1]})()
     }
+    function disableMicButton () {
+        voiceGPTExtensionMicButton.classList.add('disabled');
+        // voiceGPTExtensionMicButton.setAttribute('disabled', 'disabled');
+    }
+    function enableMicButton () {
+        voiceGPTExtensionMicButton.classList.remove('disabled');
+        // voiceGPTExtensionMicButton.removeAttribute('disabled');
+    }
 
     setInterval(() => {
         if (recognitionActive && enableAutoSubmit) {
@@ -138,6 +147,7 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
 
     document.addEventListener('ChatGPTFinishedLoadingEvent', (e) => {
         reAssignElements();
+        enableMicButton();
     });
 
     // button event listeners

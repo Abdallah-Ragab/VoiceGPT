@@ -31,8 +31,7 @@
     "manifest_version": 3,
     "action": {
         "default_icon": "assets/icon.png",
-        "default_title": "Voice GPT",
-        "default_popup": "popup.html"
+        "default_title": "Voice GPT"
     },
     "web_accessible_resources": [{
         "matches": [
