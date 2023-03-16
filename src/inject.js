@@ -1,7 +1,6 @@
-
-const fetchPlaceHTML = (element, url) => {
+const fetchPlaceHTML = (element, url, async=false) => {
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', url, true);
+  xhr.open('GET', url, async);
   xhr.onreadystatechange = function() {
     if (xhr.readyState === 4 && xhr.status === 200) {
       placeHTML(element, xhr.responseText);
@@ -29,4 +28,12 @@ const placeHTML = (element, htmlString) => {
       element.parentNode.insertBefore(child, element);
     }
     element.parentNode.removeChild(element);
+}
+const replaceElementTags = () => {
+  var elements = document.getElementsByTagName('element');
+  for (var i = 0; i < elements.length; i++) {
+      var element = elements[i];
+      var src = element.getAttribute('src');
+      fetchPlaceHTML(element, src);
+  }
 }

@@ -1,0 +1,235 @@
+:root {
+    --voice-gpt-primary-color: #7ed957;
+    --voice-gpt-primary-color-light: #a2e57f;
+    --voice-gpt-dark-color: #191919;
+}
+#voice-gpt-component, #voice-gpt-component * {
+    box-sizing: border-box;
+}
+
+#voice-gpt-component {
+    position: fixed;
+    width: 250px;
+    /* height: 200px; */
+    top: 10px;
+    right: 10px;
+    background-color: var(--voice-gpt-dark-color);
+    z-index: 2;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+}
+#voice-gpt-component .logo {
+    width: 100px;
+}
+#voice-gpt-component .record-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+#voice-gpt-component .control-button {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    background-color: #fff;
+    border: none;
+    margin: 10px;
+    padding: 8px;
+    cursor: pointer;
+    transition-duration: 0.2s;
+    -webkit-transition-duration: 0.2s;
+}
+#voice-gpt-component .control-button.active {
+    background-color: var(--voice-gpt-primary-color);
+}
+#voice-gpt-component .control-button:hover {
+    background-color: var(--voice-gpt-primary-color-light);
+}
+#voice-gpt-component .control-button svg, #voice-gpt-component .control-button svg path {
+    fill: var(--voice-gpt-dark-color)!important;
+}
+#voice-gpt-component .control-button svg {
+    width: 80%;
+    height: 80%;
+}
+#voice-gpt-component .control-button#pause[state='play'] #play-icon {
+    display: block;
+}
+#voice-gpt-component .control-button#pause[state='pause'] #pause-icon {
+    display: block;
+}
+#voice-gpt-component .control-button#pause[state='play'] #pause-icon {
+    display: none;
+}
+#voice-gpt-component .control-button#pause[state='pause'] #play-icon {
+    display: none;
+}
+
+#voice-gpt-component .transcript {
+    color: var(--voice-gpt-dark-color);
+    font-size: 16px;
+    font-family: sans-serif;
+    padding: 10px;
+    background: var(--voice-gpt-primary-color-light);
+    border: solid 5px;
+    border-radius: inherit;
+    height: min-content;
+    max-height: 100px;
+    overflow-y: auto;
+    width: 100%;
+    margin-top: 10px;
+}
+#voice-gpt-component .transcript h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+#voice-gpt-component .transcript * {
+    line-height: initial!important;
+}
+#voice-gpt-component .transcript .body p {
+    margin: 0;
+}
+
+#voice-gpt-component .transcript::-webkit-scrollbar {
+    width: 5px;
+}
+#voice-gpt-component .transcript::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    margin-right: 10px;
+}
+#voice-gpt-component .transcript::-webkit-scrollbar-thumb {
+    background: #464646;
+    border-radius: 10px;
+}
+#voice-gpt-component .transcript::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+#voice-gpt-component .transcript .placeholder {
+    color: #191919bf;
+    font-family: sans-serif;
+    display: none;
+}
+#voice-gpt-component .transcript[state='empty'] .placeholder {
+    display: block;
+}
+#voice-gpt-component .indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: red;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    -ms-border-radius: 50%;
+    -o-border-radius: 50%;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+#voice-gpt-component .options {
+    display: flex;
+    width: 100%;
+    display: flex;
+    align-items: start;
+    flex-direction: column;
+    justify-content: start;
+    margin-bottom: 10px;
+}
+#voice-gpt-component .option {
+    color: rgba(255, 255, 255, 0.8);
+    font-family: sans-serif;
+    font-size: 15px;
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+}
+#voice-gpt-component .option.sub-option {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    flex-direction: row;
+    margin-left: 20px;
+    margin-bottom: 0;
+}
+#voice-gpt-component .option.sub-option > *:not(:last-child) {
+    margin-right: 5px;
+}
+
+#voice-gpt-component .option > input {
+    display: none;
+}
+#voice-gpt-component .option input[type="text"], .option input[type="number"] {
+    width: 38px;
+    padding: 1px 3px;
+    outline: none;
+    border-radius: 4px;
+    border: none;
+    display: inline-block!important;
+    line-height: initial;
+    background-color: #3b3b3b;
+    font-size: inherit;
+    color: white;
+}
+#voice-gpt-component .option input[type=number]::-webkit-inner-spin-button {
+    background-color: red;
+    color: blue;
+    -webkit-appearance: inner-spin-button !important;
+    -webkit-text-fill-color: red;
+    width: 25px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+}
+#voice-gpt-component .option label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+#voice-gpt-component .option .checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 40%;
+    border: 2px solid #fff;
+    margin-right: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#voice-gpt-component .option .checkbox .checkmark {
+    width: 10px;
+    height: 10px;
+    border-radius: 40%;
+    background: #fff;
+    display: block;
+}
+#voice-gpt-component .option[state='off'] label .checkbox .checkmark, #voice-gpt-component  .option[state='off'] .sub-option {
+    display: none
+}
+
+.ripple {
+    background-position: center;
+    transition: background 0.8s;
+  }
+.ripple:hover {
+    background: var(--voice-gpt-primary-color) radial-gradient(circle, transparent 1%, var(--voice-gpt-primary-color) 1%) center/15000%;
+}
+.ripple:active {
+    background-color: var(--voice-gpt-primary-color-light);
+    background-size: 100%;
+    transition: background 0s;
+}
+.hidden {
+    display: none;
+}

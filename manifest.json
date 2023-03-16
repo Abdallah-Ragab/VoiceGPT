@@ -11,21 +11,19 @@
         "webRequest",
         "scripting"
     ],
-    "background": {
-        "service_worker": "service-worker.js"
-    },
     "content_scripts": [
         {
             "matches": [
                 "https://chat.openai.com/*"
             ],
             "js": [
-                "lib/import.js",
-                "content.js",   
-                "app/main.js"
+                "src/inject.js",
+                "src/initiate.js",   
+                "src/stt.js",
+                "src/render.js"
             ],
             "css": [
-                "app/main.css"
+                "css/app.css"
             ],
             "run_at": "document_end"
         }
@@ -41,8 +39,7 @@
             "https://chat.openai.com/*"
         ],
         "resources": [
-            "app/modal.html",
-            "app/main.js",
+            "app.html",
             "assets/icon.png"
         ]
     }]
