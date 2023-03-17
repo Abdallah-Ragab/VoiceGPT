@@ -134,6 +134,9 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
         voiceGPTExtensionMicButton.classList.remove('disabled');
         // voiceGPTExtensionMicButton.removeAttribute('disabled');
     }
+    function toggleVoiceGPTVisability () {
+        voiceGPTComponent.classList.toggle('hidden');
+    }
 
     setInterval(() => {
         if (recognitionActive && enableAutoSubmit) {
@@ -172,6 +175,14 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
     chatGPTSubmitButton.addEventListener('click', () => {
         uiPauseRecognition();
         uiClearPrompt();
+    });
+    voiceGPTCloseButton.addEventListener('click', () => {
+        toggleVoiceGPTVisability();
+    });
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request.message === 'toggleVoiceGPTVisability') {
+            toggleVoiceGPTVisability();
+        }
     });
 });
 

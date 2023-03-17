@@ -10,6 +10,7 @@ var voiceGPTExtensionStopButton
 var voiceGPTAutoSubmitOption
 var voiceGPTAutoSubmitOptionCheckbox
 var voiceGPTAutoSubmitSubOptionInput
+var voiceGPTCloseButton
 var chatGPTInput
 var chatGPTSubmitButton
 
@@ -26,7 +27,8 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
     voiceGPTAutoSubmitOption = document.querySelector('#voice-gpt-component .options .option#auto-submit');
     voiceGPTAutoSubmitOptionCheckbox = document.querySelector('#voice-gpt-component .options .option#auto-submit .checkbox');
     voiceGPTAutoSubmitSubOptionInput = document.querySelector('#voice-gpt-component .options .option#auto-submit .sub-option input');
-
+    voiceGPTCloseButton = document.querySelector('#voice-gpt-component .close');
+    
     chatGPTInput = document.querySelector('form textarea');
     chatGPTSubmitButton = (function _ (){let buttons = document.querySelectorAll('form button'); return buttons[buttons.length - 1]})();
 

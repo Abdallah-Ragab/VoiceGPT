@@ -41,5 +41,8 @@
             "app.html",
             "assets/icon.png"
         ]
-    }]
+    }],
+    "background": {
+        "service_worker": "src/background.js"
+    }
 }
