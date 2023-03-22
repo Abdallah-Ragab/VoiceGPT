@@ -1,11 +1,9 @@
 const voiceGPTExtensionRenderedEvent = new CustomEvent('ExtensionRenderedEvent');
 const chatGPTFinishedLoadingEvent = new CustomEvent('ChatGPTFinishedLoadingEvent');
-let DOMEvenets = ['DOMContentLoaded', 'DOMSubtreeModified'];
+const chatGPTResponseCompleteEvent = new CustomEvent('ChatGPTResponseCompleteEvent');
 
+const DOMEvenets = ['DOMContentLoaded', 'DOMSubtreeModified'];
 
-function getElementByXpath(path) {
-    return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-}
 
 function checkForLoadingFinish () {
     let chatGPTLoading = getElementByXpath("//*[local-name()='svg' and contains(@class, 'animate-spin')]");
@@ -20,16 +18,28 @@ function checkForLoadingFinish () {
         }, 1000);
     }
 }
-  
-window.onload = () => {    
+
+function checkForResponseComplete () {
+    let chatGPTSubmitButtonEnabled = document.querySelector(chatGPTSubmitButtonEnabledSelector);
+    if (chatGPTSubmitButtonEnabled) {
+        document.dispatchEvent(chatGPTResponseCompleteEvent);
+    }
+}
+
+function renderVoiceGPTExtension () {
     let extesionPlaceholder = document.createElement('div');
     extesionPlaceholder.id = 'voicegpt-placeholder';
     document.body.appendChild(extesionPlaceholder);
 
     fetchPlaceHTML(extesionPlaceholder, chrome.runtime?.getURL('app.html'));
     replaceElementTags();
-
     document.dispatchEvent(voiceGPTExtensionRenderedEvent);
-    
-    DOMEvenets.forEach(event => document.addEventListener(event, checkForLoadingFinish));
 }
+
+window.onload = () => {    
+    renderVoiceGPTExtension();
+    DOMEvenets.forEach(event => document.addEventListener(event, checkForLoadingFinish));
+    DOMEvenets.forEach(event => document.addEventListener(event, checkForLoadingFinish));
+    document.addEventListener('ChatGPTFinishedLoadingEvent', checkForResponseComplete);
+}
+

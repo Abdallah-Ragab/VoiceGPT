@@ -13,6 +13,19 @@ var voiceGPTAutoSubmitSubOptionInput
 var voiceGPTCloseButton
 var chatGPTInput
 var chatGPTSubmitButton
+var chatGPTRegenrateResponseButton
+var chatGPTInputSection
+
+
+
+const chatGPTSubmitButtonEnabledSelector = 'form button>svg'
+const regenerateResponseButtonXpath = "//button[.//div[text()='Regenerate response']]";
+const stopGeneratingButtonXpath = "//button[.//div[text()='Stop generating']]";
+const lastResponseXpath = "(//main/div[1]/div/div/div/div[contains(@class, 'group')])[last()]";
+
+function getElementByXpath(path) {
+    return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+}
 
 document.addEventListener('ExtensionRenderedEvent', (e) => {
     voiceGPTComponent = document.querySelector('#voice-gpt-component');
@@ -28,11 +41,16 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
     voiceGPTAutoSubmitOptionCheckbox = document.querySelector('#voice-gpt-component .options .option#auto-submit .checkbox');
     voiceGPTAutoSubmitSubOptionInput = document.querySelector('#voice-gpt-component .options .option#auto-submit .sub-option input');
     voiceGPTCloseButton = document.querySelector('#voice-gpt-component .close');
-    
-    chatGPTInput = document.querySelector('form textarea');
-    chatGPTSubmitButton = (function _ (){let buttons = document.querySelectorAll('form button'); return buttons[buttons.length - 1]})();
 
     if (chrome.runtime.getURL){
         voiceGPTLogo.src = chrome.runtime.getURL('assets/icon.png');
     }
+});
+
+document.addEventListener('ChatGPTFinishedLoadingEvent', (e) => {
+    chatGPTInput = document.querySelector('form textarea');
+    chatGPTSubmitButton = (function _ (){let buttons = document.querySelectorAll('form button'); return buttons[buttons.length - 1]})();
+    chatGPTRegenrateResponseButton = getElementByXpath(regenerateResponseButtonXpath);
+    chatGPTInputSection = document.querySelector("main>:last-child")
+    chatGPTRegenrateResponseButtonContainer = document.querySelector("main>:last-child>form>div>div:first-child")
 });

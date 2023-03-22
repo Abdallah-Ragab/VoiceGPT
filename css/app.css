@@ -250,7 +250,7 @@
     background-size: 100%;
     transition: background 0s;
 }
-.hidden {
+.vgpt-hidden {
     display: none!important;
 }
 .disabled {
