@@ -50,8 +50,25 @@
             </label>
             <div class="option sub-option">
                 <span>after</span>
-                <input type="number">
+                <input type="number" min="1">
                 <span>seconds</span>
+            </div>  
+        </div>
+        <div class="option" id="read-response" state="on">
+            <label>
+                <div class="checkbox">
+                    <div class="checkmark"></div>
+                </div>
+                <span>Read response.</span>
+            </label>
+            <div class="option sub-option">
+                <span>voice:</span>
+                <select name="" id="read-voice">
+                </select>
+            </div>  
+            <div class="option sub-option">
+                <span>speed:</span>
+                <input type="number" value="1" step="0.1" max="4" min="0.1">
             </div>  
         </div>
 </div>

@@ -168,8 +168,7 @@
 #voice-gpt-component .option > input {
     display: none;
 }
-#voice-gpt-component .option input[type="text"], .option input[type="number"] {
-    width: 38px;
+#voice-gpt-component .option input[type="text"], #voice-gpt-component .option input[type="number"] , #voice-gpt-component .option select {
     padding: 1px 3px;
     outline: none;
     border-radius: 4px;
@@ -179,6 +178,10 @@
     background-color: #3b3b3b;
     font-size: inherit;
     color: white;
+    max-width: 160px;
+}
+#voice-gpt-component .option input[type="number"] {
+    width: 38px;
 }
 #voice-gpt-component .option input[type=number]::-webkit-inner-spin-button {
     background-color: red;

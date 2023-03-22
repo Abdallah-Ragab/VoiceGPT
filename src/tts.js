@@ -12,7 +12,6 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
     function resetLastResponseObject () {
         lastResponseObject = new Response(lastResponseElement);
     };
-
     function observeResponsesContainerChange () {
         responsesContainer = getElementByXpath(lastResponseXpath)?.parentElement;
         if (responsesContainer) {
@@ -25,8 +24,6 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
         }
     };
     const responsesContainerObserver = new MutationObserver((mutations) => {
-        // clearTimeout(afterResponseComplete);
-
         const oldLastResponse = lastResponseElement;
         const newLastResponse = getElementByXpath(lastResponseXpath);
                 
@@ -38,12 +35,7 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
         } 
 
         handleContentChange();
-        // afterResponseComplete = setTimeout(() => {
-        //     handleContentChange();
-        //     console.log('RESPONSE COMPLETE: ', lastResponseObject.textChunks);
-        // }, 5000);
     });
-
     function observeChatGPTRegenrateResponseButtonContainer () {
         if (chatGPTRegenrateResponseButtonContainer) {
             chatGPTRegenrateResponseButtonContainerObserver.observe(chatGPTRegenrateResponseButtonContainer, { childList: true, subtree: true });
@@ -59,7 +51,6 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
             }
         }
     });
-
     function handleContentChange() {
         let newLastResponseChuncks = lastResponseObject.readTextChunks();
         if (recievingResponse()) {
@@ -67,7 +58,6 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
         }
         lastResponseObject.appendTextChunks(newLastResponseChuncks);
     }
-
     class Response {
         constructor (responseElement) {
             if (!responseElement) {console.error('Response Construction Failed: Invalid Response Element.'); return}
@@ -87,6 +77,7 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
                         innerTextChunks.push(listChild?.innerText);
                     }
                 } else if (child?.nodeName !== 'PRE') {
+                    if (child?.classlist?.contains('math')){console.log('MATH: ', child?.innerText) }
                     innerTextChunks.push(child?.innerText);
                 } 
             }
@@ -103,17 +94,181 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
             }
         }
         addChunk (chunk) {
-            if (!this.textChunks.includes(chunk)) {this.textChunks.push(chunk); console.log('New chunk added: ', chunk);}
+            if (!this.textChunks.includes(chunk)) {
+                this.textChunks.push(chunk);
+                console.log('New chunk added: ', chunk);
+                speaker.enqueue(chunk);
+            }
         }
     };
+    class SpeechManager {
+        constructor (lang = 'en-US', rate = 1.0, pitch = 1.0, volume = 1.0, voice_index = 3) {
+            this.speechSynthesis = speechSynthesis;
+            this.speechSynthesisUtterance = new SpeechSynthesisUtterance();
+            this.speechSynthesisUtterance.lang = lang;
+            this.speechSynthesisUtterance.rate = rate;
+            this.speechSynthesisUtterance.pitch = pitch;
+            this.speechSynthesisUtterance.volume = volume;
+            this.speechSynthesisUtterance.voice = this.localVoices()[voice_index];
+            this.speechSynthesisUtterance.text = '';
+            this.queue = [];
+            console.log('Available Voices: ', this.localVoices());
+            console.log('Voice: ', this.speechSynthesisUtterance.voice);
+        }
+        start () {
+            // this.refreshSpeechManager();
+            this.speechSynthesis.speak(this.speechSynthesisUtterance);
+        }
+        stop () {
+            console.log('Stopping Speech Manager...');
+            this.speechSynthesis.cancel();
+        }
+        pause () {
+            this.speechSynthesis.pause();
+        }
+        resume () {
+            this.speechSynthesis.resume();
+        }
+        clearQueue () {
+            this.queue = [];
+        }
+        localVoices () {
+            return this.speechSynthesis.getVoices().filter(voice => voice.localService);
+        }
+        refreshSpeechManager () {
+            console.log('Refreshing Speech Manager...');
+            this.stop();
+        }
+        addTextToQueue (text) {
+            // break text into sentences by . , ! ? : ;
+            let sentences = text.split(/(?<=[.!?,:;])\s+/);
+            for (let i = 0; i < sentences.length; i++) {
+                if (sentences[i].trim() === '') {continue}
+                const sentence = sentences[i];
+                this.queue.push(sentence);
+            }
+        }
+        processQueue () {
+            if (this.queue.length > 0) {
+                console.log('Reading next item in queue...');
+                console.log('Queue: ', this.queue);
+                this.speechSynthesisUtterance.text = this.queue[0];
+                this.start();
+                this.speechSynthesisUtterance.onend = () => {
+                    this.queue.splice(this.playing, 1);
+                    this.processQueue();
+                }
+            }
+            else {
+                this.stop();
+            }
+        }
+        startIfNotPlaying () {
+            if (!this.speechSynthesis.speaking) {
+                console.log('Speech Synthesis is not playing. Starting...');
+                this.processQueue();
+            } else {
+                console.log('Speech Synthesis is already playing.');
+            }
+        }
+        enqueue(text) {
+            this.addTextToQueue(text);
+            this.startIfNotPlaying();
+        }
+        setRate (rate) {
+            if (rate < 0.1 ) rate = 0.1;
+            if (rate > 4) rate = 4;
+            this.speechSynthesisUtterance.rate = rate;
+            return rate;
+        }
+        setPitch (pitch) {
+            this.speechSynthesisUtterance.pitch = pitch;
+        }
+        setVolume (volume) {
+            this.speechSynthesisUtterance.volume = volume;
+        }
+        setVoice (voice) {
+            this.speechSynthesisUtterance.voice = voice;
+        }
+        setVoiceByIndex (index) {
+            if (index < 0 || index >= this.localVoices().length) return;
+            this.speechSynthesisUtterance.voice = this.localVoices()[index];
+        }
+        setVoiceByLang (lang) {
+            this.speechSynthesisUtterance.voice = this.localVoices().filter(voice => voice.lang === lang)[0];
+        }
+    }
+
 
     let lastResponseElement
     let lastResponseObject
-    let afterResponseComplete = null;
+    let speaker
+    let enableReadResponse = true;
+    let defaultVoiceIndex = 0;
+
+    
+    speechSynthesis.onvoiceschanged = () => {
+        speaker = new SpeechManager();
+        populateVoiceSelect();
+        setReadOption();
+        setReadSpeed();
+        setVoice();
+    }
 
     document.addEventListener('ChatGPTFinishedLoadingEvent', (e) => {
         observeResponsesContainerChange();
         observeChatGPTRegenrateResponseButtonContainer();
     });
 
+    function switchReadOption () {
+        let state = voiceGPTReadOption.getAttribute('state');
+        let newState = state === 'on' ? 'off' : 'on';
+        voiceGPTReadOption.setAttribute('state', newState);
+    }
+    function setReadOption () {
+        let state = voiceGPTReadOption.getAttribute('state');
+        if (state === 'on') {
+            enableReadResponse = true;
+        } else if (state === 'off') {
+            enableReadResponse = false;
+        }
+        console.log('enableReadResponse: ' + enableReadResponse);
+    }
+    function setReadSpeed () {
+        let speed = voiceGPTReadSubOptionInput.value;
+        let newSpeed = speaker.setRate(speed);
+        console.log('Read Speed: ' + newSpeed);
+    }
+    function populateVoiceSelect() {
+        console.log('Populating Voice Select...');
+        const voiceSelect = voiceGPTReadSubOptionSelect;
+        const voices = speaker.localVoices();
+        console.log('Available Voices: ', voices);
+        for (let i = 0; i < voices.length; i++) {
+            console.log('Voice: ', voices[i]);
+            const voice = voices[i];
+            const option = document.createElement('option');
+            option.textContent = voice.name + ' (' + voice.lang + ')';
+            option.value = i;
+            voiceSelect.appendChild(option);
+        }
+        voiceSelect.selectedIndex = defaultVoiceIndex;
+    }
+    function setVoice () {
+        const voiceSelect = voiceGPTReadSubOptionSelect;
+        const index = voiceSelect.selectedIndex;
+        speaker.setVoiceByIndex(index);
+        console.log('Voice: ' + speaker.localVoices()[index].name);
+    }
+
+    voiceGPTReadOptionCheckbox.addEventListener('click', (e) => {
+        switchReadOption();
+        setReadOption();
+    });
+    voiceGPTReadSubOptionInput.addEventListener('change', (e) => {
+        setReadSpeed();
+    });
+    voiceGPTReadSubOptionSelect.addEventListener('change', (e) => {
+        setVoice();
+    });
 });

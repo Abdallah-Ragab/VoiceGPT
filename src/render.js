@@ -38,8 +38,7 @@ function renderVoiceGPTExtension () {
 
 window.onload = () => {    
     renderVoiceGPTExtension();
-    DOMEvenets.forEach(event => document.addEventListener(event, checkForLoadingFinish));
-    DOMEvenets.forEach(event => document.addEventListener(event, checkForLoadingFinish));
     document.addEventListener('ChatGPTFinishedLoadingEvent', checkForResponseComplete);
+    DOMEvenets.forEach(event => document.addEventListener(event, checkForLoadingFinish));
 }
 

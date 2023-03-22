@@ -10,6 +10,10 @@ var voiceGPTExtensionStopButton
 var voiceGPTAutoSubmitOption
 var voiceGPTAutoSubmitOptionCheckbox
 var voiceGPTAutoSubmitSubOptionInput
+var voiceGPTReadOption
+var voiceGPTReadOptionCheckbox
+var voiceGPTReadSubOptionSelect
+var voiceGPTReadSubOptionInput
 var voiceGPTCloseButton
 var chatGPTInput
 var chatGPTSubmitButton
@@ -40,6 +44,10 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
     voiceGPTAutoSubmitOption = document.querySelector('#voice-gpt-component .options .option#auto-submit');
     voiceGPTAutoSubmitOptionCheckbox = document.querySelector('#voice-gpt-component .options .option#auto-submit .checkbox');
     voiceGPTAutoSubmitSubOptionInput = document.querySelector('#voice-gpt-component .options .option#auto-submit .sub-option input');
+    voiceGPTReadOption = document.querySelector('#voice-gpt-component .options .option#read-response');
+    voiceGPTReadOptionCheckbox = document.querySelector('#voice-gpt-component .options .option#read-response .checkbox');
+    voiceGPTReadSubOptionSelect = document.querySelector('#voice-gpt-component .options .option#read-response .sub-option select');
+    voiceGPTReadSubOptionInput = document.querySelector('#voice-gpt-component .options .option#read-response .sub-option input');
     voiceGPTCloseButton = document.querySelector('#voice-gpt-component .close');
 
     if (chrome.runtime.getURL){
