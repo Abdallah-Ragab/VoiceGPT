@@ -1,4 +1,4 @@
-document.addEventListener('ExtensionRenderedEvent', (e) => {    
+document.addEventListener('ExtensionRenderedEvent', (e) => {
     function childIndex(child) {
         return child?.parentElement?.childNodes ? Array.prototype.indexOf.call(child.parentElement.childNodes, child) : null;
     };
@@ -9,9 +9,7 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
         const events = element._events || {};
         return events[eventName] && events[eventName].findIndex(l => l.toString() === listener.toString()) !== -1;
     };
-    function resetLastResponseObject () {
-        lastResponseObject = new Response(lastResponseElement);
-    };
+
     function observeResponsesContainerChange () {
         responsesContainer = getElementByXpath(lastResponseXpath)?.parentElement;
         if (responsesContainer) {
@@ -26,16 +24,16 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
     const responsesContainerObserver = new MutationObserver((mutations) => {
         const oldLastResponse = lastResponseElement;
         const newLastResponse = getElementByXpath(lastResponseXpath);
-                
+
         lastResponseElement = newLastResponse;
-        
+
         if (childIndex(oldLastResponse) !== childIndex(newLastResponse)) {
-            console.log ('New response added to the responses container.');
             resetLastResponseObject();
-        } 
+        }
 
         handleContentChange();
     });
+    
     function observeChatGPTRegenrateResponseButtonContainer () {
         if (chatGPTRegenrateResponseButtonContainer) {
             chatGPTRegenrateResponseButtonContainerObserver.observe(chatGPTRegenrateResponseButtonContainer, { childList: true, subtree: true });
@@ -51,6 +49,10 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
             }
         }
     });
+    function resetLastResponseObject () {
+        lastResponseObject = new Response(lastResponseElement);
+    };
+
     function handleContentChange() {
         let newLastResponseChuncks = lastResponseObject.readTextChunks();
         if (recievingResponse()) {
@@ -60,15 +62,19 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
     }
     class Response {
         constructor (responseElement) {
-            if (!responseElement) {console.error('Response Construction Failed: Invalid Response Element.'); return}
+            if (!responseElement) {
+                console.error('Response Construction Failed: Invalid Response Element.');
+                return;
+            }
             this.responseElement = responseElement;
             console.info('New Response Object Created.');
             this.textChunks = [];
+            speaker.terminate();
         }
         readTextChunks () {
             let responseMarkdown = this.responseElement?.querySelector('.markdown');
             let innerTextChunks = [];
-    
+
             for (let i = 0; i < responseMarkdown?.childNodes.length; i++) {
                 const child = responseMarkdown?.childNodes[i];
                 if (child?.nodeName === 'OL' || child?.nodeName === 'UL') {
@@ -76,10 +82,16 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
                         const listChild = child?.childNodes[j];
                         innerTextChunks.push(listChild?.innerText);
                     }
-                } else if (child?.nodeName !== 'PRE') {
-                    if (child?.classlist?.contains('math')){console.log('MATH: ', child?.innerText) }
-                    innerTextChunks.push(child?.innerText);
-                } 
+                } else {
+                    if (child?.nodeName === 'PRE') {
+                        innerTextChunks.push('');
+                    } else if (child?.classlist?.contains('math')){
+                        console.log('MATH: ', child?.innerText);
+                        continue;
+                    } else{
+                        innerTextChunks.push(child?.innerText);
+                    }
+                }
             }
             return innerTextChunks;
         }
@@ -96,8 +108,10 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
         addChunk (chunk) {
             if (!this.textChunks.includes(chunk)) {
                 this.textChunks.push(chunk);
-                console.log('New chunk added: ', chunk);
-                speaker.enqueue(chunk);
+                console.log('New Text added: ', chunk);
+                if(enableReadResponse){
+                    speaker.enqueue(chunk);
+                }
             }
         }
     };
@@ -112,32 +126,36 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
             this.speechSynthesisUtterance.voice = this.localVoices()[voice_index];
             this.speechSynthesisUtterance.text = '';
             this.queue = [];
-            console.log('Available Voices: ', this.localVoices());
-            console.log('Voice: ', this.speechSynthesisUtterance.voice);
         }
         start () {
-            // this.refreshSpeechManager();
+            this.stop();
             this.speechSynthesis.speak(this.speechSynthesisUtterance);
+            this.uiPlayPause()
         }
         stop () {
-            console.log('Stopping Speech Manager...');
             this.speechSynthesis.cancel();
         }
+        terminate () {
+            console.log('Terminating Speech Manager...');
+            this.stop();
+            this.uiPlayPause()
+            this.clearQueue();
+        }
+
         pause () {
+            console.log('Pausing Speech Manager...');
             this.speechSynthesis.pause();
+            this.uiPlayPause()
         }
         resume () {
             this.speechSynthesis.resume();
+            this.uiPlayPause()
         }
         clearQueue () {
             this.queue = [];
         }
         localVoices () {
             return this.speechSynthesis.getVoices().filter(voice => voice.localService);
-        }
-        refreshSpeechManager () {
-            console.log('Refreshing Speech Manager...');
-            this.stop();
         }
         addTextToQueue (text) {
             // break text into sentences by . , ! ? : ;
@@ -155,20 +173,21 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
                 this.speechSynthesisUtterance.text = this.queue[0];
                 this.start();
                 this.speechSynthesisUtterance.onend = () => {
+                    console.log('Speech ended.');
                     this.queue.splice(this.playing, 1);
                     this.processQueue();
                 }
             }
             else {
-                this.stop();
+                this.terminate();
             }
         }
         startIfNotPlaying () {
             if (!this.speechSynthesis.speaking) {
-                console.log('Speech Synthesis is not playing. Starting...');
+                console.log('Starting Speech Manager...');
                 this.processQueue();
             } else {
-                console.log('Speech Synthesis is already playing.');
+                console.log('Speech Manager already running.');
             }
         }
         enqueue(text) {
@@ -197,6 +216,16 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
         setVoiceByLang (lang) {
             this.speechSynthesisUtterance.voice = this.localVoices().filter(voice => voice.lang === lang)[0];
         }
+        uiPlayPause () {
+            let notPlaying = speaker.speechSynthesis.paused || !speaker.speechSynthesis.speaking;
+            console.log('Is Speech Playing : ', !notPlaying);
+            voiceGPTExtensionPlayPauseButton.setAttribute('state', notPlaying ? 'play' : 'pause');
+            if (notPlaying) {
+                voiceGPTExtensionPlayPauseButton.classList.remove('active');
+            } else if (!notPlaying) {
+                voiceGPTExtensionPlayPauseButton.classList.add('active');
+            }
+        }
     }
 
 
@@ -206,7 +235,7 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
     let enableReadResponse = true;
     let defaultVoiceIndex = 0;
 
-    
+
     speechSynthesis.onvoiceschanged = () => {
         speaker = new SpeechManager();
         populateVoiceSelect();
@@ -240,12 +269,9 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
         console.log('Read Speed: ' + newSpeed);
     }
     function populateVoiceSelect() {
-        console.log('Populating Voice Select...');
         const voiceSelect = voiceGPTReadSubOptionSelect;
         const voices = speaker.localVoices();
-        console.log('Available Voices: ', voices);
         for (let i = 0; i < voices.length; i++) {
-            console.log('Voice: ', voices[i]);
             const voice = voices[i];
             const option = document.createElement('option');
             option.textContent = voice.name + ' (' + voice.lang + ')';
@@ -270,5 +296,15 @@ document.addEventListener('ExtensionRenderedEvent', (e) => {
     });
     voiceGPTReadSubOptionSelect.addEventListener('change', (e) => {
         setVoice();
+    });
+    voiceGPTExtensionPlayPauseButton.addEventListener('click', (e) => {
+        if (!speaker.speechSynthesis.paused) {
+            speaker.pause();
+        } else {
+            speaker.resume();
+        }
+    });
+    voiceGPTExtensionStopButton.addEventListener('click', (e) => {
+        speaker.terminate();
     });
 });
